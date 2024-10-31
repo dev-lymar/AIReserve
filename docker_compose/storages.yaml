@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: aireservedb
+    env_file:
+      - ../.env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - aireserve_postgres_data:/var/lib/postgresql/data
+
+
+volumes:
+  aireserve_postgres_data:
