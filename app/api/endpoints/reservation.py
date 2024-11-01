@@ -54,3 +54,12 @@ async def update_reservation(
     )
 
     return reservation
+
+
+@router.get('/{meeting_room_id}/reservations', response_model=list[ReservationDB])
+async def get_reservations_for_room(meeting_room_id: int, session: AsyncSession = Depends(get_async_session)):
+    await check_meeting_room_exists(meeting_room_id, session)
+    reservations = await reservation_crud.get_future_reservations_for_room(
+        room_id=meeting_room_id, session=session
+    )
+    return reservations
