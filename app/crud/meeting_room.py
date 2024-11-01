@@ -1,10 +1,10 @@
 from typing import Optional
 
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.db import AsyncSessionLocal
 from app.models.meeting_room import MeetingRoom
-from app.schemas.meeting_room import MeetingRoomCreate
+from app.schemas.meeting_room import MeetingRoomCreate, MeetingRoomUpdate
 
 
 async def create_meeting_room(new_rom: MeetingRoomCreate, session: AsyncSession) -> MeetingRoom:
@@ -30,3 +30,32 @@ async def read_all_rooms_from_db(session: AsyncSession) -> list[MeetingRoom]:
     db_rooms = await session.execute(select(MeetingRoom))
 
     return db_rooms.scalars().all()
+
+
+async def get_meeting_room_by_id(room_id: int, session: AsyncSession) -> Optional[MeetingRoom]:
+    db_room = await session.execute(
+        select(MeetingRoom).where(MeetingRoom.id == room_id)
+    )
+
+    return db_room.scalar_one_or_none()
+
+
+async def update_meeting_room(db_room: MeetingRoom, update_data: MeetingRoomUpdate, session: AsyncSession) -> MeetingRoom:
+    obj_data = jsonable_encoder(db_room)
+    update_data = update_data.model_dump(exclude_unset=True)
+
+    for field in obj_data:
+        if field in update_data:
+            setattr(db_room, field, update_data[field])
+
+    session.add(db_room)
+    await session.commit()
+    await session.refresh(db_room)
+
+    return db_room
+
+
+async def delete_meeting_room(db_room: MeetingRoom, session: AsyncSession) -> MeetingRoom :
+    await session.delete(db_room)
+    await session.commit()
+    return db_room
