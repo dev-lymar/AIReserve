@@ -10,7 +10,7 @@ class ReservationBase(BaseModel):
 
 class ReservationUpdate(ReservationBase):
 
-    @model_validator
+    @field_validator('from_reserve')
     def check_from_reserve_later_than_now(cls, value):
         if value <= datetime.now():
             raise ValueError(
@@ -18,12 +18,13 @@ class ReservationUpdate(ReservationBase):
             )
         return value
 
-    @field_validator
+    @model_validator(mode="after")
     def check_from_reserve_before_to_reserve(cls, values):
-        if values['from_reserve'] >= values['to_reserve']:
+        if values.from_reserve >= values.to_reserve:
             raise ValueError(
                 'Booking start time cannot be longer than the end time'
             )
+        return values
 
 
 class ReservationCreate(ReservationUpdate):
@@ -35,4 +36,4 @@ class ReservationDB(ReservationBase):
     meetingroom_id: int
 
     class Config:
-        from_atributes = True
+        from_attributes = True
