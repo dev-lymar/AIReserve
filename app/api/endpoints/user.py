@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from app.core.user import auth_backend, fastapi_users
 from app.schemas.user import UserCreate, UserRead, UserUpdate
@@ -22,3 +22,16 @@ router.include_router(
     prefix='/users',
     tags=['users']
 )
+
+
+@router.delete(
+    '/users/{id}',
+    tags=['users'],
+    deprecated=True
+)
+def delete_user(id: str):
+    """Dont use delete, deactivate users."""
+    raise HTTPException(
+        status_code=405,
+        detail="Deleting users is forbidden!"
+    )
