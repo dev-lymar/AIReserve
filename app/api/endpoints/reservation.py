@@ -38,8 +38,13 @@ async def get_all_reservations(session: AsyncSession = Depends(get_async_session
 
 
 @router.delete('/{reservation_id}', response_model=ReservationDB)
-async def remove_reservation(reservation_id: int, session: AsyncSession = Depends(get_async_session)):
-    reservation = await check_reservation_before_edit(reservation_id, session)
+async def remove_reservation(
+    reservation_id: int,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_user)
+):
+    """For superusers or creators of the reservation object"""
+    reservation = await check_reservation_before_edit(reservation_id, session, user)
     reservation = await reservation_crud.remove(reservation, session)
 
     return reservation
@@ -49,9 +54,11 @@ async def remove_reservation(reservation_id: int, session: AsyncSession = Depend
 async def update_reservation(
     reservation_id: int,
     obj_in: ReservationUpdate,
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_user)
 ):
-    reservation = await check_reservation_before_edit(reservation_id, session)
+    """For superusers or creators of the reservation object"""
+    reservation = await check_reservation_before_edit(reservation_id, session, user)
     await check_reservation_intersections(
         **obj_in.model_dump(),
         reservation_id=reservation_id,
@@ -67,10 +74,26 @@ async def update_reservation(
     return reservation
 
 
-@router.get('/{meeting_room_id}/reservations', response_model=list[ReservationDB])
+@router.get(
+    '/{meeting_room_id}/reservations',
+    response_model=list[ReservationDB],
+    response_model_exclude={'__all__': {'user_id'}}
+)
 async def get_reservations_for_room(meeting_room_id: int, session: AsyncSession = Depends(get_async_session)):
     await check_meeting_room_exists(meeting_room_id, session)
     reservations = await reservation_crud.get_future_reservations_for_room(
         room_id=meeting_room_id, session=session
     )
+    return reservations
+
+
+@router.get(
+    '/my_reservations',
+    response_model=list[ReservationDB],
+    response_model_exclude={'__all__': {'user_id'}}
+)
+async def get_my_reservations(session: AsyncSession = Depends(get_async_session), user: User = Depends(current_user)):
+    """Retrieves a list of all reservations for the current user"""
+    reservations = await reservation_crud.get_by_user(session=session, user=user)
+
     return reservations
