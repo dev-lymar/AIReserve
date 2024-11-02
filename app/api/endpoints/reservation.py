@@ -3,24 +3,35 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.validators import check_meeting_room_exists, check_reservation_before_edit, check_reservation_intersections
 from app.core.db import get_async_session
+from app.core.user import current_user, current_superuser
 from app.crud.reservation import reservation_crud
+from app.models.user import User
 from app.schemas.reservation import ReservationCreate, ReservationDB, ReservationUpdate
 
 router = APIRouter()
 
 
 @router.post('/', response_model=ReservationDB)
-async def create_reservation(reservation: ReservationCreate, session: AsyncSession = Depends(get_async_session)):
+async def create_reservation(
+    reservation: ReservationCreate,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_user)
+):
     await check_meeting_room_exists(reservation.meetingroom_id, session)
     await check_reservation_intersections(**reservation.model_dump(), session=session)
-    new_reservation = await reservation_crud.create(reservation, session)
+    new_reservation = await reservation_crud.create(reservation, session, user)
 
 
     return new_reservation
 
 
-@router.get('/', response_model=list[ReservationDB])
+@router.get(
+    '/',
+    response_model=list[ReservationDB],
+    dependencies=[Depends(current_superuser)]
+    )
 async def get_all_reservations(session: AsyncSession = Depends(get_async_session)):
+    """Only for superusers"""
     reservations = await reservation_crud.get_multi(session)
 
     return reservations
