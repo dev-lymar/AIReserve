@@ -6,4 +6,4 @@ from app.core.config import settings
 
 app = FastAPI()
 
-app.include_router(main_router)
+app.include_router(main_router, prefix='/api/v1')
