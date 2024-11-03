@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  fastapi-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: aireserve-app
+    env_file:
+      - ../.env
+    command: "sh /app/entrypoint.sh"
+    depends_on:
+      - postgres
+    networks:
+      - aireserve_network
+
+  postgres:
+    image: postgres:latest
+    container_name: aireservedb
+    env_file:
+      - ../.env
+    ports:
+      - "${PG_PORT}:5432"
+    volumes:
+      - aireserve_postgres_data:/var/lib/postgresql/data
+    networks:
+      - aireserve_network
+
+  nginx:
+    image: nginx:latest
+    container_name: aireserve_nginx
+    ports:
+      - "${NGINX_PORT}:80"
+    volumes:
+      - ../nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - fastapi-app
+    networks:
+      - aireserve_network
+
+volumes:
+  aireserve_postgres_data:
+
+networks:
+  aireserve_network:
