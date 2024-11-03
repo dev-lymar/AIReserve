@@ -75,11 +75,13 @@ async def update_reservation(
     response_model_exclude={'__all__': {'user_id'}},
 )
 async def get_reservations_for_room(
-    meeting_room_id: int, session: AsyncSession = Depends(get_async_session)
+    meeting_room_id: int,
+    session: AsyncSession = Depends(get_async_session),
 ):
     await check_meeting_room_exists(meeting_room_id, session)
     reservations = await reservation_crud.get_future_reservations_for_room(
-        room_id=meeting_room_id, session=session
+        room_id=meeting_room_id,
+        session=session,
     )
     return reservations
 
@@ -90,7 +92,8 @@ async def get_reservations_for_room(
     response_model_exclude={'__all__': {'user_id'}},
 )
 async def get_my_reservations(
-    session: AsyncSession = Depends(get_async_session), user: User = Depends(current_user)
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_user),
 ):
     """Retrieves a list of all reservations for the current user"""
     reservations = await reservation_crud.get_by_user(session=session, user=user)

@@ -1,7 +1,7 @@
 """Create MeetingRoom table
 
 Revision ID: 0e54a2ef4fb8
-Revises: 
+Revises:
 Create Date: 2024-10-31 22:18:40.551930
 
 """

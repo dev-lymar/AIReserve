@@ -17,7 +17,8 @@ router = APIRouter()
     dependencies=[Depends(current_superuser)],
 )
 async def create_new_meeting_room(
-    meeting_room: MeetingRoomCreate, session: AsyncSession = Depends(get_async_session)
+    meeting_room: MeetingRoomCreate,
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Only for superusers"""
     await check_name_duplicate(meeting_room.name, session)
@@ -65,7 +66,8 @@ async def partially_update_meeting_room(
     dependencies=[Depends(current_superuser)],
 )
 async def remove_meeting_room(
-    meeting_room_id: int, session: AsyncSession = Depends(get_async_session)
+    meeting_room_id: int,
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Only for superusers"""
     meeting_room = await check_meeting_room_exists(meeting_room_id, session)

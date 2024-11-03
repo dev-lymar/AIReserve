@@ -33,8 +33,9 @@ class CRUDReservation(CRUDBase):
     async def get_future_reservations_for_room(self, room_id: int, session: AsyncSession):
         reservations = await session.execute(
             select(Reservation).where(
-                Reservation.meetingroom_id == room_id, Reservation.to_reserve >= datetime.now()
-            )
+                Reservation.meetingroom_id == room_id,
+                Reservation.to_reserve >= datetime.now(),
+            ),
         )
         reservations = reservations.scalars().all()
 
@@ -42,7 +43,7 @@ class CRUDReservation(CRUDBase):
 
     async def get_by_user(self, session: AsyncSession, user: User) -> list[Reservation]:
         reservations = await session.execute(
-            select(Reservation).where(Reservation.user_id == user.id)
+            select(Reservation).where(Reservation.user_id == user.id),
         )
 
         return reservations.scalars().all()

@@ -27,13 +27,16 @@ async def check_reservation_intersections(**kwargs) -> None:
 
 
 async def check_reservation_before_edit(
-    reservation_id: int, session: AsyncSession, user: User
+    reservation_id: int,
+    session: AsyncSession,
+    user: User,
 ) -> Reservation:
     reservation = await reservation_crud.get(obj_id=reservation_id, session=session)
     if not reservation:
         raise HTTPException(status_code=404, detail='Reservation not found')
     if reservation.user_id != user.id and not user.is_superuser:
         raise HTTPException(
-            status_code=403, detail='Unable to edit or delete not uour own reservation'
+            status_code=403,
+            detail='Unable to edit or delete not uour own reservation',
         )
     return reservation
