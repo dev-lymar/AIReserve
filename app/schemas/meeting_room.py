@@ -3,7 +3,6 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 
 
-
 class MeetingRoomBase(BaseModel):
     name: str = Field(None, min_length=1, max_length=100)
     description: Optional[str] = None
@@ -14,7 +13,6 @@ class MeetingRoomCreate(MeetingRoomBase):
 
 
 class MeetingRoomUpdate(MeetingRoomBase):
-
     @field_validator('name')
     def name_cannot_be_null(cls, value):
         if value is None:

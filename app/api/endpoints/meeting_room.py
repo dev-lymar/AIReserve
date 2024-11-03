@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.validators import check_meeting_room_exists, check_name_duplicate
@@ -10,13 +9,16 @@ from app.schemas.meeting_room import MeetingRoomCreate, MeetingRoomDB, MeetingRo
 
 router = APIRouter()
 
+
 @router.post(
     '/',
     response_model=MeetingRoomDB,
     response_model_exclude_none=True,
-    dependencies=[Depends(current_superuser)]
+    dependencies=[Depends(current_superuser)],
 )
-async def create_new_meeting_room(meeting_room: MeetingRoomCreate, session: AsyncSession = Depends(get_async_session)):
+async def create_new_meeting_room(
+    meeting_room: MeetingRoomCreate, session: AsyncSession = Depends(get_async_session)
+):
     """Only for superusers"""
     await check_name_duplicate(meeting_room.name, session)
     new_room = await meeting_room_crud.create(meeting_room, session)
@@ -39,7 +41,7 @@ async def get_all_meeting_rooms(session: AsyncSession = Depends(get_async_sessio
     '/{meeting_rooms_id}',
     response_model=MeetingRoomDB,
     response_model_exclude_none=True,
-    dependencies=[Depends(current_superuser)]
+    dependencies=[Depends(current_superuser)],
 )
 async def partially_update_meeting_room(
     meeting_room_id: int,
@@ -47,7 +49,7 @@ async def partially_update_meeting_room(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Only for superusers"""
-    await check_meeting_room_exists(meeting_room_id, session)
+    meeting_room = await check_meeting_room_exists(meeting_room_id, session)
     if obj_in.name is not None:
         await check_name_duplicate(obj_in.name, session)
 
@@ -60,9 +62,11 @@ async def partially_update_meeting_room(
     '/{meeting_room_id}',
     response_model=MeetingRoomDB,
     response_model_exclude_none=True,
-    dependencies=[Depends(current_superuser)]
+    dependencies=[Depends(current_superuser)],
 )
-async def remove_meeting_room(meeting_room_id: int, session: AsyncSession = Depends(get_async_session)):
+async def remove_meeting_room(
+    meeting_room_id: int, session: AsyncSession = Depends(get_async_session)
+):
     """Only for superusers"""
     meeting_room = await check_meeting_room_exists(meeting_room_id, session)
     meeting_room = await meeting_room_crud.remove(meeting_room, session)
