@@ -25,6 +25,6 @@ jobs:
         run: poetry install --only dev --no-interaction --no-root
 
       - name: Run Ruff
-        uses: chartboost/ruff-action@v1
+        uses: astral-sh/ruff-action@v1
         with:
-          changed-files: 'true'
+          changed-files: "true"
